@@ -42,7 +42,7 @@ st.markdown("""
         color: #000000; /* Black for slider min/max values and chosen value */
         background: transparent; /* Remove background from min/max and chosen value */
         position: relative;
-        top: -10px; /* Move chosen value slightly above the slider */
+        top: -15px; /* Move chosen value slightly above the slider (increased from -10px for better visibility) */
     }
     .stText {
         color: #000000; /* Black for text readability */
