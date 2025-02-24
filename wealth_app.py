@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Custom CSS for styling with the new palette
+# Custom CSS for styling with the new palette (keeping the existing CSS unchanged)
 st.markdown("""
     <style>
     .main {
@@ -38,6 +38,15 @@ st.markdown("""
     }
     .stText {
         color: #000000; /* Black for text readability */
+    }
+    .stat-number {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1E90FF; /* Dodger Blue for emphasis */
+    }
+    .stat-label {
+        font-size: 16px;
+        color: #191970; /* Midnight Blue for labels */
     }
     </style>
 """, unsafe_allow_html=True)
@@ -93,17 +102,18 @@ if st.button("Run Simulation", key="run_button"):
             momentum_history = np.roll(momentum_history, -1, axis=1)
             momentum_history[:, -1] = luck
 
-        # Display statistics in columns
+        # Display statistics in perfectly aligned columns with numbers first and bold
         col3, col4 = st.columns(2)
         with col3:
             st.markdown('<h3 class="header">Simulation Statistics</h3>', unsafe_allow_html=True)
-            st.write(f"Initial wealth per person: {w}")
-            st.write(f"Final average wealth: {np.mean(wealth):.2f}")
-            st.write(f"Final median wealth: {np.median(wealth):.2f}")
+            st.markdown(f'<div class="stat-number">100.0</div><div class="stat-label">Initial wealth per person $</div>', unsafe_allow_html=True)  # Added $ icon
+            st.markdown(f'<div class="stat-number">{np.mean(wealth):.2f}</div><div class="stat-label">Final average wealth $</div>', unsafe_allow_html=True)  # Added $ icon
+            st.markdown(f'<div class="stat-number">{np.median(wealth):.2f}</div><div class="stat-label">Final median wealth $</div>', unsafe_allow_html=True)  # Added $ icon
+
         with col4:
-            st.write(f"Final wealth inequality (standard deviation): {np.std(wealth):.2f}")
-            st.write(f"Minimum final wealth: {np.min(wealth):.2f}")
-            st.write(f"Maximum final wealth: {np.max(wealth):.2f}")
+            st.markdown(f'<div class="stat-number">{np.std(wealth):.2f}</div><div class="stat-label">Final wealth inequality (standard deviation)</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="stat-number">{np.min(wealth):.2f}</div><div class="stat-label">Minimum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
+            st.markdown(f'<div class="stat-number">{np.max(wealth):.2f}</div><div class="stat-label">Maximum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
 
         # Create and display histogram of wealth distribution
         fig1, ax1 = plt.subplots(figsize=(12, 6))  # Larger figure size for wider bars
