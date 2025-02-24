@@ -38,18 +38,23 @@ if st.button("Run Simulation"):
     ax1.grid(True, alpha=0.3)
     st.pyplot(fig1)
 
-    # Create and display quartile-based graph
-    quartiles = np.percentile(wealth, [25, 50, 75, 100])  # Calculate quartiles
-    labels = ['0-25% (Q1)', '25-50% (Q2)', '50-75% (Q3)', '75-100% (Q4)']
-    counts, _ = np.histogram(wealth, bins=quartiles)
-    
-    fig2, ax2 = plt.subplots(figsize=(8, 6))
-    ax2.bar(labels, counts, color=['lightblue', 'lightgreen', 'lightcoral', 'lightyellow'])
-    ax2.set_title('Wealth Distribution by Quartiles')
-    ax2.set_ylabel('Number of Individuals')
-    ax2.set_xlabel('Wealth Quartiles')
-    ax2.grid(True, alpha=0.3)
-    st.pyplot(fig2)
+# Calculate quartiles (including 0% for a complete range)
+quartiles = np.percentile(wealth, [0, 25, 50, 75, 100])  # Now includes 0% and 100%
+labels = ['0-25% (Q1)', '25-50% (Q2)', '50-75% (Q3)', '75-100% (Q4)']
+counts, _ = np.histogram(wealth, bins=quartiles)
+
+# Ensure counts and labels match—pad with zeros if necessary (though this shouldn’t be needed with correct bins)
+if len(counts) != len(labels):
+    counts = np.pad(counts, (0, len(labels) - len(counts)), mode='constant')
+
+fig2, ax2 = plt.subplots(figsize=(8, 6))
+ax2.bar(labels, counts, color=['lightblue', 'lightgreen', 'lightcoral', 'lightyellow'])
+ax2.set_title('Wealth Distribution by Quartiles')
+ax2.set_ylabel('Number of Individuals')
+ax2.set_xlabel('Wealth Quartiles')
+ax2.grid(True, alpha=0.3)
+st.pyplot(fig2)
+
 
 # Add some instructions
 st.write("""
