@@ -53,22 +53,23 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title of the app with custom styling
-st.markdown('<h1 class="title">Population Inequality Simulator</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="title">Monte Carlo Wealth Inequality Simulator with Momentum</h1>', unsafe_allow_html=True)
 
 # Use columns for better layout
 col1, col2 = st.columns(2)
 
 with col1:
     # Input parameters from users (left column)
-    n = st.slider("Number of Individuals", 100, 10000, 1000, key="n_slider", help="Number of people in the population.")
+    n = st.slider("Number of Individuals", 100, 5000, 1000, key="n_slider", help="Number of people in the simulation.")
     w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0, key="wealth_input", help="Starting wealth for each individual.")
-    t = st.slider("Number of Time Steps", 10, 250, 50, key="time_slider", help="Number of simulation steps.")
+    t = st.slider("Number of Time Steps", 10, 100, 50, key="time_slider", help="Number of simulation steps.")
+    probability_of_success = st.slider("Probability of Success (%)", 45, 55, 50, key="success_prob_slider", help="Baseline chance of gaining wealth per step (before momentum). 50% = neutral, >50% favors gains, <50% favors losses.")
 
 with col2:
     # More inputs (right column)
     luck_magnitude = st.slider("Luck Magnitude (±% Change)", 0.05, 0.5, 0.1, key="luck_slider", help="Magnitude of random wealth changes per step.")
     momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3, key="momentum_window_slider", help="Number of recent steps to track for momentum.")
-    momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20, key="momentum_magnitude_slider", help="Sets how much recent streak influence next outcome. 0% = no momentum, 40% = max effect (+ 40 p.p. for lucky streaks, -40 p.p. for unlucky).")
+    momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20, key="momentum_magnitude_slider", help="Sets how much recent streaks influence future outcomes. 0% = no momentum (uses Probability of Success), 40% = max effect (90% gain for lucky streaks, 10% for unlucky).")
 
 # Run simulation button (centered)
 if st.button("Run Simulation", key="run_button"):
@@ -79,22 +80,22 @@ if st.button("Run Simulation", key="run_button"):
         # Initialize momentum history for each individual
         momentum_history = np.zeros((n, momentum_window), dtype=int)
 
-        # Simulate wealth changes over time with momentum
+        # Simulate wealth changes over time with momentum and probability of success
         for _ in range(t):
             # Calculate momentum for each individual
             momentum = np.sum(momentum_history, axis=1)
             
-            # Adjust probability of gain based on momentum
+            # Adjust probability of gain based on momentum and probability of success
             luck = np.zeros(n, dtype=int)
             for i in range(n):
                 if momentum[i] == momentum_window:  # All gains
-                    gain_prob = 0.5 + (momentum_magnitude / 100)
+                    gain_prob = min(1.0, max(0.0, 0.5 + (momentum_magnitude / 100)))  # Cap at 0%–100%
                     luck[i] = 1 if np.random.random() < gain_prob else -1
                 elif momentum[i] == -momentum_window:  # All losses
-                    gain_prob = 0.5 - (momentum_magnitude / 100)
+                    gain_prob = min(1.0, max(0.0, 0.5 - (momentum_magnitude / 100)))  # Cap at 0%–100%
                     luck[i] = 1 if np.random.random() < gain_prob else -1
-                else:  # Mixed or no clear streak, use 50% chance
-                    luck[i] = 1 if np.random.random() < 0.5 else -1
+                else:  # Mixed or no clear streak, use probability of success
+                    luck[i] = 1 if np.random.random() < (probability_of_success / 100) else -1
 
             # Apply wealth change
             wealth *= (1 + luck * luck_magnitude)
@@ -103,7 +104,7 @@ if st.button("Run Simulation", key="run_button"):
             momentum_history = np.roll(momentum_history, -1, axis=1)
             momentum_history[:, -1] = luck
 
-        # Display "Simulation Results" title centered, with a line break/spacing below
+        # Display "Simulation Statistics" title centered, with a line break/spacing below
         st.markdown('<h3 class="header">Simulation Statistics</h3>', unsafe_allow_html=True)
         st.write("")  # Add a blank line for spacing
 
@@ -115,7 +116,7 @@ if st.button("Run Simulation", key="run_button"):
             st.markdown(f'<div class="stat-number">{np.median(wealth):.2f}</div><div class="stat-label">Final median wealth $</div>', unsafe_allow_html=True)  # Added $ icon
 
         with col4:
-            st.markdown(f'<div class="stat-number">{np.std(wealth):.2f}</div><div class="stat-label">Standard deviation $</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="stat-number">{np.std(wealth):.2f}</div><div class="stat-label">Final wealth inequality (standard deviation)</div>', unsafe_allow_html=True)
             st.markdown(f'<div class="stat-number">{np.min(wealth):.2f}</div><div class="stat-label">Minimum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
             st.markdown(f'<div class="stat-number">{np.max(wealth):.2f}</div><div class="stat-label">Maximum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
 
@@ -171,5 +172,6 @@ st.write("""
     Adjust the sliders and input fields above to change the simulation parameters.
     Click 'Run Simulation' to see the wealth distribution after random luck events with momentum.
     Momentum increases the chance of continued gains or losses based on recent trends, with customizable magnitude.
-    Setting Momentum Magnitude to 0% removes the momentum effect (50% chance up or down regardless of streaks).
+    Probability of Success sets the baseline chance of gaining wealth, independent of momentum.
+    Setting Momentum Magnitude to 0% removes the momentum effect (uses Probability of Success only).
 """)
