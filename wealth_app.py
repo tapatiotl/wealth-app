@@ -174,4 +174,8 @@ if st.button("Run Simulation", key="run_button"):
 st.markdown('<h3 class="header">Instructions</h3>', unsafe_allow_html=True)
 st.write("""
     Adjust the inputs and sliders above to change the simulation parameters.
-    Click 'Run Simulation' to see the
+    Click 'Run Simulation' to see the wealth distribution after random luck events with momentum.
+    Momentum increases the chance of continued gains or losses based on recent trends, with customizable magnitude.
+    Probability of Success sets the baseline chance of gaining wealth, independent of momentum.
+    Setting Momentum Magnitude to 0% removes the momentum effect (uses Probability of Success only).
+""")
