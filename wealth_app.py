@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Custom CSS for styling with the new palette (keeping the existing CSS unchanged)
+# Custom CSS for styling with the new palette and UI adjustments
 st.markdown("""
     <style>
     .main {
@@ -33,9 +33,14 @@ st.markdown("""
     }
     .stSlider > div > div > div {
         background-color: #87CEEB; /* Sky Blue for slider track */
+        height: 20px; /* Increased height for better visibility */
     }
     .stSlider > div > div > div > div {
-        background-color: #1E90FF; /* Dodger Blue for slider handle */
+        background-color: #191970; /* Midnight Blue for slider handle (replacing orange) */
+    }
+    .stSlider .stSliderValue {
+        color: #000000; /* Black for slider min/max values, remove background */
+        background: transparent; /* Remove background from min/max values */
     }
     .stText {
         color: #000000; /* Black for text readability */
@@ -59,15 +64,15 @@ st.markdown('<h1 class="title">Monte Carlo Wealth Inequality Simulator with Mome
 col1, col2 = st.columns(2)
 
 with col1:
-    # Input parameters from users (left column)
-    n = st.slider("Number of Individuals", 100, 5000, 1000, key="n_slider", help="Number of people in the simulation.")
+    # Input parameters from users (left column) - Number inputs for individuals and steps
+    n = st.number_input("Number of Individuals", min_value=1, max_value=10000, value=1000, step=10, format="%d", key="n_input", help="Number of people in the simulation (use + or - to adjust by 10, or type a number 1–10,000).")
     w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0, key="wealth_input", help="Starting wealth for each individual.")
-    t = st.slider("Number of Time Steps", 10, 100, 50, key="time_slider", help="Number of simulation steps.")
+    t = st.number_input("Number of Time Steps", min_value=1, max_value=250, value=50, step=5, format="%d", key="t_input", help="Number of simulation steps (use + or - to adjust by 5, or type a number 1–250).")
     probability_of_success = st.slider("Probability of Success (%)", 45, 55, 50, key="success_prob_slider", help="Baseline chance of gaining wealth per step (before momentum). 50% = neutral, >50% favors gains, <50% favors losses.")
 
 with col2:
-    # More inputs (right column)
-    luck_magnitude = st.slider("Luck Magnitude (±% Change)", 0.05, 0.5, 0.1, key="luck_slider", help="Magnitude of random wealth changes per step.")
+    # More inputs (right column) - Sliders with updated styling
+    luck_magnitude = st.slider("Δ wealth per step", 0.05, 0.5, 0.1, key="luck_slider", help="Magnitude of random wealth changes per step.")
     momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3, key="momentum_window_slider", help="Number of recent steps to track for momentum.")
     momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20, key="momentum_magnitude_slider", help="Sets how much recent streaks influence future outcomes. 0% = no momentum (uses Probability of Success), 40% = max effect (90% gain for lucky streaks, 10% for unlucky).")
 
@@ -169,7 +174,7 @@ if st.button("Run Simulation", key="run_button"):
 # Add instructions with custom styling
 st.markdown('<h3 class="header">Instructions</h3>', unsafe_allow_html=True)
 st.write("""
-    Adjust the sliders and input fields above to change the simulation parameters.
+    Adjust the inputs and sliders above to change the simulation parameters.
     Click 'Run Simulation' to see the wealth distribution after random luck events with momentum.
     Momentum increases the chance of continued gains or losses based on recent trends, with customizable magnitude.
     Probability of Success sets the baseline chance of gaining wealth, independent of momentum.
