@@ -18,6 +18,7 @@ st.markdown("""
     .header {
         color: #1E90FF; /* Dodger Blue for headers */
         font-size: 24px;
+        text-align: center;
     }
     .stButton>button {
         background-color: #1E90FF; /* Dodger Blue for buttons */
@@ -52,22 +53,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title of the app with custom styling
-st.markdown('<h1 class="title">Monte Carlo Wealth Inequality Simulator with Momentum</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="title">Population Inequality Simulator</h1>', unsafe_allow_html=True)
 
 # Use columns for better layout
 col1, col2 = st.columns(2)
 
 with col1:
     # Input parameters from users (left column)
-    n = st.slider("Number of Individuals", 100, 5000, 1000, key="n_slider", help="Number of people in the simulation.")
+    n = st.slider("Number of Individuals", 100, 10000, 1000, key="n_slider", help="Number of people in the population.")
     w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0, key="wealth_input", help="Starting wealth for each individual.")
-    t = st.slider("Number of Time Steps", 10, 100, 50, key="time_slider", help="Number of simulation steps.")
+    t = st.slider("Number of Time Steps", 10, 250, 50, key="time_slider", help="Number of simulation steps.")
 
 with col2:
     # More inputs (right column)
     luck_magnitude = st.slider("Luck Magnitude (±% Change)", 0.05, 0.5, 0.1, key="luck_slider", help="Magnitude of random wealth changes per step.")
     momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3, key="momentum_window_slider", help="Number of recent steps to track for momentum.")
-    momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20, key="momentum_magnitude_slider", help="Sets how much recent streaks influence future outcomes. 0% = no momentum (50% chance up/down), 40% = max effect (90% gain for lucky streaks, 10% for unlucky).")
+    momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20, key="momentum_magnitude_slider", help="Sets how much recent streak influence next outcome. 0% = no momentum, 40% = max effect (+ 40 p.p. for lucky streaks, -40 p.p. for unlucky).")
 
 # Run simulation button (centered)
 if st.button("Run Simulation", key="run_button"):
@@ -102,16 +103,19 @@ if st.button("Run Simulation", key="run_button"):
             momentum_history = np.roll(momentum_history, -1, axis=1)
             momentum_history[:, -1] = luck
 
+        # Display "Simulation Results" title centered, with a line break/spacing below
+        st.markdown('<h3 class="header">Simulation Statistics</h3>', unsafe_allow_html=True)
+        st.write("")  # Add a blank line for spacing
+
         # Display statistics in perfectly aligned columns with numbers first and bold
         col3, col4 = st.columns(2)
         with col3:
-            st.markdown('<h3 class="header">Simulation Statistics</h3>', unsafe_allow_html=True)
             st.markdown(f'<div class="stat-number">100.0</div><div class="stat-label">Initial wealth per person $</div>', unsafe_allow_html=True)  # Added $ icon
             st.markdown(f'<div class="stat-number">{np.mean(wealth):.2f}</div><div class="stat-label">Final average wealth $</div>', unsafe_allow_html=True)  # Added $ icon
             st.markdown(f'<div class="stat-number">{np.median(wealth):.2f}</div><div class="stat-label">Final median wealth $</div>', unsafe_allow_html=True)  # Added $ icon
 
         with col4:
-            st.markdown(f'<div class="stat-number">{np.std(wealth):.2f}</div><div class="stat-label">Final wealth inequality (standard deviation)</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="stat-number">{np.std(wealth):.2f}</div><div class="stat-label">Standard deviation $</div>', unsafe_allow_html=True)
             st.markdown(f'<div class="stat-number">{np.min(wealth):.2f}</div><div class="stat-label">Minimum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
             st.markdown(f'<div class="stat-number">{np.max(wealth):.2f}</div><div class="stat-label">Maximum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
 
