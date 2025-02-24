@@ -2,19 +2,59 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Title of the app
-st.title("Monte Carlo Wealth Inequality Simulator with Momentum")
+# Custom CSS for styling (using st.markdown with HTML)
+st.markdown("""
+    <style>
+    .main {
+        background-color: #F5F5F5; /* Light gray background */
+        padding: 20px;
+    }
+    .title {
+        color: #1E90FF; /* Deep blue for title */
+        font-size: 36px;
+        font-weight: bold;
+        text-align: center;
+    }
+    .header {
+        color: #2ECC71; /* Emerald green for headers */
+        font-size: 24px;
+    }
+    .stButton>button {
+        background-color: #FFD700; /* Gold for buttons */
+        color: black;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    .stSlider > div > div > div {
+        background-color: #E6F3FF; /* Light blue for slider track */
+    }
+    .stSlider > div > div > div > div {
+        background-color: #2ECC71; /* Emerald green for slider handle */
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Input parameters from users
-n = st.slider("Number of Individuals", 100, 5000, 1000)
-w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0)
-t = st.slider("Number of Time Steps", 10, 100, 50)
-luck_magnitude = st.slider("Luck Magnitude (±% Change)", 0.05, 0.5, 0.1)
-momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3)  # Number of steps to track for momentum
-momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20)  # New: Slider from 0% to 40%, default 20%
+# Title of the app with custom styling
+st.markdown('<h1 class="title">Monte Carlo Wealth Inequality Simulator with Momentum</h1>', unsafe_allow_html=True)
 
-# Run simulation when user clicks a button
-if st.button("Run Simulation"):
+# Use columns for better layout
+col1, col2 = st.columns(2)
+
+with col1:
+    # Input parameters from users (left column)
+    n = st.slider("Number of Individuals", 100, 5000, 1000, key="n_slider")
+    w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0, key="wealth_input")
+    t = st.slider("Number of Time Steps", 10, 100, 50, key="time_slider")
+
+with col2:
+    # More inputs (right column)
+    luck_magnitude = st.slider("Luck Magnitude (±% Change)", 0.05, 0.5, 0.1, key="luck_slider")
+    momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3, key="momentum_window_slider")
+    momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20, key="momentum_magnitude_slider")
+
+# Run simulation button (centered for visual appeal)
+if st.button("Run Simulation", key="run_button"):
     # Initialize wealth as floats
     wealth = np.array([w] * n, dtype=float)
     
@@ -45,20 +85,24 @@ if st.button("Run Simulation"):
         momentum_history = np.roll(momentum_history, -1, axis=1)
         momentum_history[:, -1] = luck  # Add the latest luck (+1 or -1) to the end
 
-    # Display statistics
-    st.write(f"Initial wealth per person: {w}")
-    st.write(f"Final average wealth: {np.mean(wealth):.2f}")
-    st.write(f"Final median wealth: {np.median(wealth):.2f}")
-    st.write(f"Final wealth inequality (standard deviation): {np.std(wealth):.2f}")
-    st.write(f"Minimum final wealth: {np.min(wealth):.2f}")
-    st.write(f"Maximum final wealth: {np.max(wealth):.2f}")
+    # Display statistics in columns for better layout
+    col3, col4 = st.columns(2)
+    with col3:
+        st.markdown('<h3 class="header">Simulation Statistics</h3>', unsafe_allow_html=True)
+        st.write(f"Initial wealth per person: {w}")
+        st.write(f"Final average wealth: {np.mean(wealth):.2f}")
+        st.write(f"Final median wealth: {np.median(wealth):.2f}")
+    with col4:
+        st.write(f"Final wealth inequality (standard deviation): {np.std(wealth):.2f}")
+        st.write(f"Minimum final wealth: {np.min(wealth):.2f}")
+        st.write(f"Maximum final wealth: {np.max(wealth):.2f}")
 
     # Create and display histogram of wealth distribution
     fig1, ax1 = plt.subplots(figsize=(10, 6))
     ax1.hist(wealth, bins=30, color='skyblue', edgecolor='black')
-    ax1.set_title('Wealth Distribution After Random Luck Events with Momentum')
-    ax1.set_xlabel('Wealth')
-    ax1.set_ylabel('Number of Individuals')
+    ax1.set_title('Wealth Distribution After Random Luck Events with Momentum', color='#1E90FF')
+    ax1.set_xlabel('Wealth', color='#2ECC71')
+    ax1.set_ylabel('Number of Individuals', color='#2ECC71')
     ax1.grid(True, alpha=0.3)
     st.pyplot(fig1)
 
@@ -82,15 +126,21 @@ if st.button("Run Simulation"):
 
     # Create and display bar chart of wealth distribution by quartiles (as percentages)
     fig2, ax2 = plt.subplots(figsize=(8, 6))
-    ax2.bar(labels, wealth_percentages, color=['lightblue', 'lightgreen', 'lightcoral', 'lightyellow'])
-    ax2.set_title('Percentage of Total Wealth by Quartiles')
-    ax2.set_ylabel('Percentage of Total Wealth (%)')
-    ax2.set_xlabel('Wealth Quartiles')
+    bars = ax2.bar(labels, wealth_percentages, color=['lightblue', 'lightgreen', 'lightcoral', 'lightyellow'])
+    ax2.set_title('Percentage of Total Wealth by Quartiles', color='#1E90FF')
+    ax2.set_ylabel('Percentage of Total Wealth (%)', color='#2ECC71')
+    ax2.set_xlabel('Wealth Quartiles', color='#2ECC71')
     ax2.grid(True, alpha=0.3)
     ax2.set_ylim(0, 100)
+    # Add value labels on top of bars for clarity
+    for bar in bars:
+        height = bar.get_height()
+        ax2.text(bar.get_x() + bar.get_width()/2., height, f'{height:.1f}%', 
+                 ha='center', va='bottom', color='black', fontweight='bold')
     st.pyplot(fig2)
 
-# Add some instructions
+# Add some instructions with custom styling
+st.markdown('<h3 class="header">Instructions</h3>', unsafe_allow_html=True)
 st.write("""
     Adjust the sliders and input fields above to change the simulation parameters.
     Click 'Run Simulation' to see the wealth distribution after random luck events with momentum.
