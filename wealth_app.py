@@ -42,7 +42,7 @@ st.markdown("""
         color: #000000; /* Black for slider min/max values and chosen value */
         background: transparent; /* Remove background from min/max and chosen value */
         position: relative;
-        top: -15px; /* Move chosen value slightly above the slider (increased from -10px for better visibility) */
+        top: -15px; /* Move chosen value slightly above the slider */
     }
     .stText {
         color: #000000; /* Black for text readability */
@@ -124,16 +124,16 @@ if st.button("Run Simulation", key="run_button"):
             st.markdown(f'<div class="stat-number">{np.min(wealth):.2f}</div><div class="stat-label">Minimum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
             st.markdown(f'<div class="stat-number">{np.max(wealth):.2f}</div><div class="stat-label">Maximum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
 
-        # Create and display histogram of wealth distribution
+        # Create and display histogram of wealth distribution with updated styling
         fig1, ax1 = plt.subplots(figsize=(12, 6))  # Larger figure size for wider bars
-        ax1.hist(wealth, bins=30, color='skyblue', edgecolor='black')  # Using Sky Blue for histogram
-        ax1.set_title('Wealth Distribution After Random Luck Events with Momentum', color='#1E90FF')  # Dodger Blue
+        ax1.hist(wealth, bins=30, color='skyblue', edgecolor='black', log=True)  # Logarithmic y-axis
+        ax1.set_title('Wealth Distribution', color='#1E90FF', fontsize=24)  # Simplified title, larger font (24pt, Dodger Blue)
         ax1.set_xlabel('Wealth', color='#191970')  # Midnight Blue
-        ax1.set_ylabel('Number of Individuals', color='#191970')  # Midnight Blue
+        ax1.set_ylabel('Number of Individuals (Log Scale)', color='#191970')  # Midnight Blue, updated for log scale
         ax1.grid(True, alpha=0.3, color='#D3D3D3')  # Cool Gray for grid
-        # Add mean and median lines
-        ax1.axvline(x=np.mean(wealth), color='#FF6F61', linestyle='--', label='Mean')  # Sunset Orange for mean
-        ax1.axvline(x=np.median(wealth), color='#2ECC71', linestyle='--', label='Median')  # Emerald Green (placeholder, adjust if needed)
+        # Add mean and median lines in the same color (Sunset Orange), mean continuous, median dashed
+        ax1.axvline(x=np.mean(wealth), color='#FF6F61', linestyle='-', label='Mean')  # Sunset Orange, continuous line
+        ax1.axvline(x=np.median(wealth), color='#FF6F61', linestyle='--', label='Median')  # Sunset Orange, dashed line
         ax1.legend()
         st.pyplot(fig1)
 
@@ -174,8 +174,4 @@ if st.button("Run Simulation", key="run_button"):
 st.markdown('<h3 class="header">Instructions</h3>', unsafe_allow_html=True)
 st.write("""
     Adjust the inputs and sliders above to change the simulation parameters.
-    Click 'Run Simulation' to see the wealth distribution after random luck events with momentum.
-    Momentum increases the chance of continued gains or losses based on recent trends, with customizable magnitude.
-    Probability of Success sets the baseline chance of gaining wealth, independent of momentum.
-    Setting Momentum Magnitude to 0% removes the momentum effect (uses Probability of Success only).
-""")
+    Click 'Run Simulation' to see the
