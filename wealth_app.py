@@ -11,7 +11,7 @@ w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0)
 t = st.slider("Number of Time Steps", 10, 100, 50)
 luck_magnitude = st.slider("Luck Magnitude (±% Change)", 0.05, 0.5, 0.1)
 momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3)  # Number of steps to track for momentum
-momentum_gain_prob = st.slider("Momentum Gain Probability (for Full Positive Streak, %)", 50, 90, 70)  # New: User-defined gain probability
+momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20)  # New: Slider from 0% to 40%, default 20%
 
 # Run simulation when user clicks a button
 if st.button("Run Simulation"):
@@ -30,9 +30,11 @@ if st.button("Run Simulation"):
         luck = np.zeros(n, dtype=int)
         for i in range(n):
             if momentum[i] == momentum_window:  # All gains (e.g., 3 gains in a 3-step window)
-                luck[i] = 1 if np.random.random() < (momentum_gain_prob / 100) else -1  # User-defined gain probability
+                gain_prob = 0.5 + (momentum_magnitude / 100)  # e.g., 50% + 20% = 70% chance of gain
+                luck[i] = 1 if np.random.random() < gain_prob else -1  # Higher gain probability
             elif momentum[i] == -momentum_window:  # All losses (e.g., 3 losses in a 3-step window)
-                luck[i] = 1 if np.random.random() < (1 - momentum_gain_prob / 100) else -1  # Complementary loss probability
+                gain_prob = 0.5 - (momentum_magnitude / 100)  # e.g., 50% - 20% = 30% chance of gain
+                luck[i] = 1 if np.random.random() < gain_prob else -1  # Lower gain probability
             else:  # Mixed or no clear streak, use 50% chance (neutral)
                 luck[i] = 1 if np.random.random() < 0.5 else -1
 
@@ -92,5 +94,6 @@ if st.button("Run Simulation"):
 st.write("""
     Adjust the sliders and input fields above to change the simulation parameters.
     Click 'Run Simulation' to see the wealth distribution after random luck events with momentum.
-    Momentum increases the chance of continued gains or losses based on recent trends, with customizable gain probability for full positive streaks.
+    Momentum increases the chance of continued gains or losses based on recent trends, with customizable magnitude.
+    Setting Momentum Magnitude to 0% removes the momentum effect (50% chance up or down regardless of streaks).
 """)
