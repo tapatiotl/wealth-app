@@ -10,7 +10,8 @@ n = st.slider("Number of Individuals", 100, 5000, 1000)
 w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0)
 t = st.slider("Number of Time Steps", 10, 100, 50)
 luck_magnitude = st.slider("Luck Magnitude (±% Change)", 0.05, 0.5, 0.1)
-momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3)  # New: Number of steps to track for momentum
+momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3)  # Number of steps to track for momentum
+momentum_gain_prob = st.slider("Momentum Gain Probability (for Full Positive Streak, %)", 50, 90, 70)  # New: User-defined gain probability
 
 # Run simulation when user clicks a button
 if st.button("Run Simulation"):
@@ -29,9 +30,9 @@ if st.button("Run Simulation"):
         luck = np.zeros(n, dtype=int)
         for i in range(n):
             if momentum[i] == momentum_window:  # All gains (e.g., 3 gains in a 3-step window)
-                luck[i] = 1 if np.random.random() < 0.7 else -1  # 70% chance of gain, 30% chance of loss
+                luck[i] = 1 if np.random.random() < (momentum_gain_prob / 100) else -1  # User-defined gain probability
             elif momentum[i] == -momentum_window:  # All losses (e.g., 3 losses in a 3-step window)
-                luck[i] = 1 if np.random.random() < 0.3 else -1  # 30% chance of gain, 70% chance of loss
+                luck[i] = 1 if np.random.random() < (1 - momentum_gain_prob / 100) else -1  # Complementary loss probability
             else:  # Mixed or no clear streak, use 50% chance (neutral)
                 luck[i] = 1 if np.random.random() < 0.5 else -1
 
@@ -91,5 +92,5 @@ if st.button("Run Simulation"):
 st.write("""
     Adjust the sliders and input fields above to change the simulation parameters.
     Click 'Run Simulation' to see the wealth distribution after random luck events with momentum.
-    Momentum increases the chance of continued gains or losses based on recent trends.
+    Momentum increases the chance of continued gains or losses based on recent trends, with customizable gain probability for full positive streaks.
 """)
