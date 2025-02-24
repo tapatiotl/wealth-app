@@ -2,40 +2,47 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Custom CSS for styling
+# Custom CSS for styling with the new palette
 st.markdown("""
     <style>
     .main {
-        background-color: #F5F5F5;
+        background-color: #FAFAFA; /* Soft White background */
         padding: 20px;
     }
     .title {
-        color: #1E90FF;
+        color: #191970; /* Midnight Blue for title */
         font-size: 36px;
         font-weight: bold;
         text-align: center;
     }
     .header {
-        color: #2ECC71;
+        color: #1E90FF; /* Dodger Blue for headers */
         font-size: 24px;
     }
     .stButton>button {
-        background-color: #FFD700;
-        color: black;
+        background-color: #1E90FF; /* Dodger Blue for buttons */
+        color: white;
         border-radius: 5px;
         padding: 10px 20px;
         font-size: 16px;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #87CEEB; /* Sky Blue on hover for buttons */
     }
     .stSlider > div > div > div {
-        background-color: #E6F3FF;
+        background-color: #87CEEB; /* Sky Blue for slider track */
     }
     .stSlider > div > div > div > div {
-        background-color: #2ECC71;
+        background-color: #1E90FF; /* Dodger Blue for slider handle */
+    }
+    .stText {
+        color: #000000; /* Black for text readability */
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Title of the app
+# Title of the app with custom styling
 st.markdown('<h1 class="title">Monte Carlo Wealth Inequality Simulator with Momentum</h1>', unsafe_allow_html=True)
 
 # Use columns for better layout
@@ -100,14 +107,14 @@ if st.button("Run Simulation", key="run_button"):
 
         # Create and display histogram of wealth distribution
         fig1, ax1 = plt.subplots(figsize=(12, 6))  # Larger figure size for wider bars
-        ax1.hist(wealth, bins=30, color='skyblue', edgecolor='black')
-        ax1.set_title('Wealth Distribution After Random Luck Events with Momentum', color='#1E90FF')
-        ax1.set_xlabel('Wealth', color='#2ECC71')
-        ax1.set_ylabel('Number of Individuals', color='#2ECC71')
-        ax1.grid(True, alpha=0.3)
+        ax1.hist(wealth, bins=30, color='skyblue', edgecolor='black')  # Using Sky Blue for histogram
+        ax1.set_title('Wealth Distribution After Random Luck Events with Momentum', color='#1E90FF')  # Dodger Blue
+        ax1.set_xlabel('Wealth', color='#191970')  # Midnight Blue
+        ax1.set_ylabel('Number of Individuals', color='#191970')  # Midnight Blue
+        ax1.grid(True, alpha=0.3, color='#D3D3D3')  # Cool Gray for grid
         # Add mean and median lines
-        ax1.axvline(x=np.mean(wealth), color='red', linestyle='--', label='Mean')
-        ax1.axvline(x=np.median(wealth), color='green', linestyle='--', label='Median')
+        ax1.axvline(x=np.mean(wealth), color='#FF6F61', linestyle='--', label='Mean')  # Sunset Orange for mean
+        ax1.axvline(x=np.median(wealth), color='#2ECC71', linestyle='--', label='Median')  # Emerald Green (placeholder, adjust if needed)
         ax1.legend()
         st.pyplot(fig1)
 
@@ -131,11 +138,11 @@ if st.button("Run Simulation", key="run_button"):
 
         # Create and display bar chart of wealth distribution by quartiles
         fig2, ax2 = plt.subplots(figsize=(10, 6))
-        bars = ax2.bar(labels, wealth_percentages, color=['lightblue', 'lightgreen', 'lightcoral', 'lightyellow'])
-        ax2.set_title('Percentage of Total Wealth by Quartiles', color='#1E90FF')
-        ax2.set_ylabel('Percentage of Total Wealth (%)', color='#2ECC71')
-        ax2.set_xlabel('Wealth Quartiles', color='#2ECC71')
-        ax2.grid(True, alpha=0.3)
+        bars = ax2.bar(labels, wealth_percentages, color=['#87CEEB', '#2ECC71', '#FF6F61', '#1E90FF'])  # Sky Blue, Emerald Green, Sunset Orange, Dodger Blue
+        ax2.set_title('Percentage of Total Wealth by Quartiles', color='#1E90FF')  # Dodger Blue
+        ax2.set_ylabel('Percentage of Total Wealth (%)', color='#191970')  # Midnight Blue
+        ax2.set_xlabel('Wealth Quartiles', color='#191970')  # Midnight Blue
+        ax2.grid(True, alpha=0.3, color='#D3D3D3')  # Cool Gray for grid
         ax2.set_ylim(0, 100)
         # Add value labels on top of bars
         for bar in bars:
