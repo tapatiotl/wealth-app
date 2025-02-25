@@ -1,105 +1,62 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
-# Custom CSS for styling with the new palette and UI adjustments
-st.markdown("""
-    <style>
-    .main {
-        background-color: #FAFAFA; /* Soft White background */
-        padding: 20px;
-    }
-    .title {
-        color: #191970; /* Midnight Blue for title */
-        font-size: 36px;
-        font-weight: bold;
-        text-align: center;
-    }
-    .header {
-        color: #1E90FF; /* Dodger Blue for headers */
-        font-size: 24px;
-        text-align: center;
-    }
-    .stButton>button {
-        background-color: #1E90FF; /* Dodger Blue for buttons */
-        color: white;
-        border-radius: 5px;
-        padding: 10px 20px;
-        font-size: 16px;
-        border: none;
-    }
-    .stButton>button:hover {
-        background-color: #87CEEB; /* Sky Blue on hover for buttons */
-    }
-    .stSlider > div > div > div {
-        background-color: #87CEEB; /* Sky Blue for slider track */
-        height: 20px; /* Increased height for better visibility */
-    }
-    .stSlider > div > div > div > div {
-        background-color: #191970; /* Midnight Blue for slider handle */
-    }
-    .stSlider .st-bk { /* Try st-bk, or inspect for correct class (e.g., st-ar, st-bj) */
-        background-color: #1E90FF; /* Dodger Blue for slider progress bar */
-    }
-    .stSlider .stSliderValue {
-        color: #000000; /* Black for slider min/max values and chosen value */
-        background: transparent; /* Remove background from min/max and chosen value */
-        position: relative;
-        top: -15px; /* Move chosen value slightly above the slider */
-        font-size: 16px; /* Increase font size for better readability */
-    }
-    .stText {
-        color: #000000; /* Black for text readability */
-    }
-    .stat-number {
-        font-size: 28px;
-        font-weight: bold;
-        color: #1E90FF; /* Dodger Blue for emphasis */
-    }
-    .stat-label {
-        font-size: 16px;
-        color: #191970; /* Midnight Blue for labels */
-    }
-    .slider-label {
-        color: #191970; /* Midnight Blue for slider labels */
-        font-size: 20px;
-        margin-bottom: 10px;
-    }
-    .slider-value {
-        color: #000000; /* Black for displayed values */
-        font-size: 18px; /* Larger font for visibility */
-        font-weight: bold;
-        margin-top: 5px; /* Space above the value */
-    }
-    </style>
-""", unsafe_allow_html=True)
+# Title of the app (using Streamlit’s default styling, adjusted manually)
+st.title("Monte Carlo Wealth Inequality Simulator with Momentum")
 
-# Title of the app with custom styling
-st.markdown('<h1 class="title">Monte Carlo Wealth Inequality Simulator with Momentum</h1>', unsafe_allow_html=True)
-
-# Use a single column for all inputs, with number inputs first, followed by sliders
+# Use a single column for all inputs, with number inputs first, followed by Plotly sliders
 with st.container():
     # Number inputs (first)
-    n = st.number_input("Number of Individuals", min_value=1, max_value=10000, value=1000, step=12, format="%d", key="n_input", help="Number of people in the simulation (use + or - to adjust by 10, or type a number 1–10,000).")
+    n = st.number_input("Number of Individuals", min_value=1, max_value=10000, value=1000, step=10, format="%d", key="n_input", help="Number of people in the simulation (use + or - to adjust by 10, or type a number 1–10,000).")
     w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0, key="wealth_input", help="Starting wealth for each individual.")
     t = st.number_input("Number of Time Steps", min_value=1, max_value=250, value=50, step=5, format="%d", key="t_input", help="Number of simulation steps (use + or - to adjust by 5, or type a number 1–250).")
 
-    # Sliders with enhanced labels and values (CSS + fallback)
-    st.markdown('<div class="slider-label">Δ wealth per step</div>')
-    luck_magnitude = st.slider("", 0.05, 0.5, 0.1, key="luck_slider", help="Magnitude of random wealth changes per step.")
-    st.markdown(f'<div class="slider-value">Current Δ wealth per step: {luck_magnitude:.2f}</div>', unsafe_allow_html=True)
+    # Function to create a custom Plotly RangeSlider
+    def custom_range_slider(label, min_val, max_val, default_val, help_text, value_type=float):
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=[0], y=[0], mode="markers", visible=False))  # Dummy trace for layout
+        fig.update_layout(
+            showlegend=False,
+            height=50,
+            margin=dict(l=0, r=0, t=0, b=0),
+            paper_bgcolor="#FAFAFA",  # Soft White background
+            plot_bgcolor="#FAFAFA",
+            sliders=[{
+                "active": int((default_val - min_val) / (max_val - min_val) * 100),
+                "currentvalue": {"prefix": f"Current {label}: ", "font": {"size": 16, "color": "#000000"}},
+                "steps": [{"value": v, "label": str(round(v, 2) if value_type == float else v)} for v in np.linspace(min_val, max_val, 100) if value_type == float or v.is_integer()],
+                "pad": {"t": 50, "b": 10},
+                "len": 0.9,
+                "bgcolor": "#87CEEB",  # Sky Blue track
+                "bordercolor": "#191970",  # Midnight Blue border
+                "borderwidth": 1,
+                "tickcolor": "#000000",  # Black ticks
+                "font": {"color": "#000000", "size": 14},  # Black text, 14px for ticks
+            }],
+            updatemenus=[{
+                "type": "buttons",
+                "direction": "left",
+                "buttons": [{"label": "Reset", "method": "animate", "args": [[{"visible": [True]}], {"frame": {"duration": 0, "redraw": True}}]}],
+                "pad": {"r": 10, "t": 10},
+                "showactive": False,
+                "x": 0.05,
+                "xanchor": "left",
+                "y": 0,
+                "yanchor": "top"
+            }]
+        )
+        st.write(f"**{label}**", style={'color': '#191970', 'font-size': '20px', 'margin-bottom': '10px'})  # Midnight Blue label, 20px
+        value = st.plotly_chart(fig, use_container_width=True).data[0].x[0] if value_type == float else int(st.plotly_chart(fig, use_container_width=True).data[0].x[0])
+        st.write(f"**Current {label}: {value:.2f if value_type == float else value}**", style={'color': '#000000', 'font-size': '18px', 'font-weight': 'bold', 'margin-top': '5px'})  # Black value, 18px bold
+        return value if value_type == float else int(value)
 
-    st.markdown('<div class="slider-label">Momentum Window (Steps to Track)</div>')
-    momentum_window = st.slider("", 1, 5, 3, key="momentum_window_slider", help="Number of recent steps to track for momentum.")
-    st.markdown(f'<div class="slider-value">Current Momentum Window: {momentum_window}</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="slider-label">Momentum Magnitude (Effect on Probability, %)</div>')
-    momentum_magnitude = st.slider("", 0, 40, 20, key="momentum_magnitude_slider", help="Sets how much recent streaks influence future outcomes. 0% = no momentum (uses Probability of Success), 40% = max effect (90% gain for lucky streaks, 10% for unlucky).")
-    st.markdown(f'<div class="slider-value">Current Momentum Magnitude: {momentum_magnitude}%</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="slider-label">Probability of Success (%)</div>')
-    probability_of_success = st.slider("", 45, 55, 50, key="success_prob_slider", help="Baseline chance of gaining wealth per step (before momentum). 50% = neutral, >50% favors gains, <50% favors losses.")
-    st.markdown(f'<div class="slider-value">Current Probability of Success: {probability_of_success}%</div>', unsafe_allow_html=True)
+    # Custom Plotly RangeSliders (second)
+    luck_magnitude = custom_range_slider("Δ wealth per step", 0.05, 0.5, 0.1, "Magnitude of random wealth changes per step.", float)
+    momentum_window = custom_range_slider("Momentum Window (Steps to Track)", 1, 5, 3, "Number of recent steps to track for momentum.", int)
+    momentum_magnitude = custom_range_slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20, "Sets how much recent streaks influence future outcomes. 0% = no momentum (uses Probability of Success), 40% = max effect (90% gain for lucky streaks, 10% for unlucky).", int)
+    probability_of_success = custom_range_slider("Probability of Success (%)", 45, 55, 50, "Baseline chance of gaining wealth per step (before momentum). 50% = neutral, >50% favors gains, <50% favors losses.", int)
 
 # Run simulation button (centered)
 if st.button("Run Simulation", key="run_button"):
@@ -135,20 +92,26 @@ if st.button("Run Simulation", key="run_button"):
             momentum_history[:, -1] = luck
 
         # Display "Simulation Statistics" title centered, with a line break/spacing below
-        st.markdown('<h3 class="header">Simulation Statistics</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="color: #1E90FF; font-size: 24px; text-align: center;">Simulation Statistics</h3>', unsafe_allow_html=True)
         st.write("")  # Add a blank line for spacing
 
         # Display statistics in perfectly aligned columns with numbers first and bold
         col3, col4 = st.columns(2)
         with col3:
-            st.markdown(f'<div class="stat-number">100.0</div><div class="stat-label">Initial wealth per person $</div>', unsafe_allow_html=True)  # Added $ icon
-            st.markdown(f'<div class="stat-number">{np.mean(wealth):.2f}</div><div class="stat-label">Final average wealth $</div>', unsafe_allow_html=True)  # Added $ icon
-            st.markdown(f'<div class="stat-number">{np.median(wealth):.2f}</div><div class="stat-label">Final median wealth $</div>', unsafe_allow_html=True)  # Added $ icon
+            st.write(f"**100.0**", style={'color': '#1E90FF', 'font-size': '28px', 'font-weight': 'bold'})  # Dodger Blue, 28px
+            st.write("Initial wealth per person $", style={'color': '#191970', 'font-size': '16px'})  # Midnight Blue, 16px
+            st.write(f"**{np.mean(wealth):.2f}**", style={'color': '#1E90FF', 'font-size': '28px', 'font-weight': 'bold'})  # Dodger Blue, 28px
+            st.write("Final average wealth $", style={'color': '#191970', 'font-size': '16px'})  # Midnight Blue, 16px
+            st.write(f"**{np.median(wealth):.2f}**", style={'color': '#1E90FF', 'font-size': '28px', 'font-weight': 'bold'})  # Dodger Blue, 28px
+            st.write("Final median wealth $", style={'color': '#191970', 'font-size': '16px'})  # Midnight Blue, 16px
 
         with col4:
-            st.markdown(f'<div class="stat-number">{np.std(wealth):.2f}</div><div class="stat-label">Final wealth inequality (standard deviation)</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="stat-number">{np.min(wealth):.2f}</div><div class="stat-label">Minimum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
-            st.markdown(f'<div class="stat-number">{np.max(wealth):.2f}</div><div class="stat-label">Maximum final wealth $</div>', unsafe_allow_html=True)  # Added $ icon
+            st.write(f"**{np.std(wealth):.2f}**", style={'color': '#1E90FF', 'font-size': '28px', 'font-weight': 'bold'})  # Dodger Blue, 28px
+            st.write("Final wealth inequality (standard deviation)", style={'color': '#191970', 'font-size': '16px'})  # Midnight Blue, 16px
+            st.write(f"**{np.min(wealth):.2f}**", style={'color': '#1E90FF', 'font-size': '28px', 'font-weight': 'bold'})  # Dodger Blue, 28px
+            st.write("Minimum final wealth $", style={'color': '#191970', 'font-size': '16px'})  # Midnight Blue, 16px
+            st.write(f"**{np.max(wealth):.2f}**", style={'color': '#1E90FF', 'font-size': '28px', 'font-weight': 'bold'})  # Dodger Blue, 28px
+            st.write("Maximum final wealth $", style={'color': '#191970', 'font-size': '16px'})  # Midnight Blue, 16px
 
         # Create and display histogram of wealth distribution with updated styling
         fig1, ax1 = plt.subplots(figsize=(12, 6))  # Larger figure size for wider bars
@@ -197,7 +160,7 @@ if st.button("Run Simulation", key="run_button"):
         st.pyplot(fig2)
 
 # Add instructions with custom styling
-st.markdown('<h3 class="header">Instructions</h3>', unsafe_allow_html=True)
+st.markdown('<h3 style="color: #1E90FF; font-size: 24px; text-align: center;">Instructions</h3>', unsafe_allow_html=True)
 st.write("""
     Adjust the inputs and sliders above to change the simulation parameters.
     Click 'Run Simulation' to see the wealth distribution after random luck events with momentum.
