@@ -38,11 +38,15 @@ st.markdown("""
     .stSlider > div > div > div > div {
         background-color: #191970; /* Midnight Blue for slider handle */
     }
+    .stSlider .st-bk { /* Try st-bk, or inspect for correct class (e.g., st-ar, st-bj) */
+        background-color: #1E90FF; /* Dodger Blue for slider progress bar */
+    }
     .stSlider .stSliderValue {
         color: #000000; /* Black for slider min/max values and chosen value */
         background: transparent; /* Remove background from min/max and chosen value */
         position: relative;
         top: -15px; /* Move chosen value slightly above the slider */
+        font-size: 16px; /* Increase font size for better readability */
     }
     .stText {
         color: #000000; /* Black for text readability */
@@ -56,6 +60,17 @@ st.markdown("""
         font-size: 16px;
         color: #191970; /* Midnight Blue for labels */
     }
+    .slider-label {
+        color: #191970; /* Midnight Blue for slider labels */
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    .slider-value {
+        color: #000000; /* Black for displayed values */
+        font-size: 18px; /* Larger font for visibility */
+        font-weight: bold;
+        margin-top: 5px; /* Space above the value */
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -65,15 +80,26 @@ st.markdown('<h1 class="title">Monte Carlo Wealth Inequality Simulator with Mome
 # Use a single column for all inputs, with number inputs first, followed by sliders
 with st.container():
     # Number inputs (first)
-    n = st.number_input("Number of Individuals", min_value=1, max_value=10000, value=1000, step=10, format="%d", key="n_input", help="Number of people in the simulation (use + or - to adjust by 10, or type a number 1–10,000).")
+    n = st.number_input("Number of Individuals", min_value=1, max_value=10000, value=1000, step=12, format="%d", key="n_input", help="Number of people in the simulation (use + or - to adjust by 10, or type a number 1–10,000).")
     w = st.number_input("Initial Wealth per Person", min_value=1.0, value=100.0, key="wealth_input", help="Starting wealth for each individual.")
     t = st.number_input("Number of Time Steps", min_value=1, max_value=250, value=50, step=5, format="%d", key="t_input", help="Number of simulation steps (use + or - to adjust by 5, or type a number 1–250).")
 
-    # Sliders (second, with enhanced readability)
-    luck_magnitude = st.slider("Δ wealth per step", 0.05, 0.5, 0.1, key="luck_slider", help="Magnitude of random wealth changes per step.")
-    momentum_window = st.slider("Momentum Window (Steps to Track)", 1, 5, 3, key="momentum_window_slider", help="Number of recent steps to track for momentum.")
-    momentum_magnitude = st.slider("Momentum Magnitude (Effect on Probability, %)", 0, 40, 20, key="momentum_magnitude_slider", help="Sets how much recent streaks influence future outcomes. 0% = no momentum (uses Probability of Success), 40% = max effect (90% gain for lucky streaks, 10% for unlucky).")
-    probability_of_success = st.slider("Probability of Success (%)", 45, 55, 50, key="success_prob_slider", help="Baseline chance of gaining wealth per step (before momentum). 50% = neutral, >50% favors gains, <50% favors losses.")
+    # Sliders with enhanced labels and values (CSS + fallback)
+    st.markdown('<div class="slider-label">Δ wealth per step</div>')
+    luck_magnitude = st.slider("", 0.05, 0.5, 0.1, key="luck_slider", help="Magnitude of random wealth changes per step.")
+    st.markdown(f'<div class="slider-value">Current Δ wealth per step: {luck_magnitude:.2f}</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="slider-label">Momentum Window (Steps to Track)</div>')
+    momentum_window = st.slider("", 1, 5, 3, key="momentum_window_slider", help="Number of recent steps to track for momentum.")
+    st.markdown(f'<div class="slider-value">Current Momentum Window: {momentum_window}</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="slider-label">Momentum Magnitude (Effect on Probability, %)</div>')
+    momentum_magnitude = st.slider("", 0, 40, 20, key="momentum_magnitude_slider", help="Sets how much recent streaks influence future outcomes. 0% = no momentum (uses Probability of Success), 40% = max effect (90% gain for lucky streaks, 10% for unlucky).")
+    st.markdown(f'<div class="slider-value">Current Momentum Magnitude: {momentum_magnitude}%</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="slider-label">Probability of Success (%)</div>')
+    probability_of_success = st.slider("", 45, 55, 50, key="success_prob_slider", help="Baseline chance of gaining wealth per step (before momentum). 50% = neutral, >50% favors gains, <50% favors losses.")
+    st.markdown(f'<div class="slider-value">Current Probability of Success: {probability_of_success}%</div>', unsafe_allow_html=True)
 
 # Run simulation button (centered)
 if st.button("Run Simulation", key="run_button"):
